@@ -2,7 +2,6 @@ const crypto = require("crypto");
 const fs = require("fs");
 const path = require("path");
 const nativeTheme = require("electron");
-const { timeStamp, time } = require("console");
 
 nativeTheme.themeSource = "dark";
 
@@ -43,8 +42,17 @@ window.onerror = function (msg, url, line, col, error) {
     l2dError(errmsg);
 };
 
+async function getPlatform() {
+    if (window.navigator.userAgentData) {
+        const data = await navigator.userAgentData.getHighEntropyValues(["platform"]);
+        return data.platform.toLowerCase();
+    } else {
+        return navigator.userAgent.toLowerCase();
+    }
+}
+
 function viewer() {
-    this.platform = window.navigator.platform.toLowerCase();
+    this.platform = getPlatform();
 
     this.live2DMgr = new LAppLive2DManager();
 
@@ -86,12 +94,13 @@ function viewer() {
     });
 
     this.blacklist = [];
+
     if (fs.existsSync(blacklistPath)) {
-        this.blacklist = fs.readFileSync(blacklistPath).toString().split("\n");
-        // Append datasetRoot to the paths
-        this.blacklist.forEach((item, index) => {
-            this.blacklist[index] = path.join(datasetRoot, item);
-        });
+        this.blacklist = fs.readFileSync(blacklistPath, "utf-8")
+            .split("\n")
+            .map(item => item.trim()) // 공백 제거
+            .filter(item => item.length > 0) // 빈 줄 제거
+            .map(item => path.join(datasetRoot, item)); // datasetRoot와 결합
     }
 
     // モデル描画用canvasの初期化
@@ -107,11 +116,28 @@ viewer.goto = function () {
 };
 
 viewer.save = function (filepath = path.join(outputRoot, "image.png")) {
-    // Save canvas to png file
-    var img = canvas.toDataURL();
-    var data = img.replace(/^data:image\/\w+;base64,/, "");
-    var buf = Buffer.from(data, "base64");
-    fs.writeFileSync(filepath, buf);
+    try {
+        // Save canvas to png file
+        var img = canvas.toDataURL();   // canvas의 내용을 Data URL 형식으로 가져옴
+        if (img.length === 0) {
+            console.error("Canvas is empty, nothing to save!");
+            return;
+        }
+        
+        var data = img.replace(/^data:image\/\w+;base64,/, ""); // Data URL에서 Base64 데이터만 추출
+        var buf = Buffer.from(data, "base64");  // Base64 데이터를 바이너리 형식의 버퍼로 변환
+
+        // 비동기 방식으로 파일 저장
+        fs.writeFile(filepath, buf, (err) => {
+            if (err) {
+                console.error("Error saving the image:", err);
+            } else {
+                console.log("Image saved successfully!");
+            }
+        });
+    } catch (error) {
+        console.error("An error occurred while saving the image:", error);
+    }
 };
 
 viewer.saveLayer = function (dir = path.join(outputRoot, "layer")) {

@@ -9,7 +9,7 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "electron": "^10.1.3"
+    "electron": "^34.0.2"
   },
   "dependencies": {
     "package.json": "^2.0.1"
@@ -22,5 +22,5 @@
     "url": "https://github.com/jeffshee/live2d/issues"
   },
   "homepage": "https://github.com/jeffshee/live2d#readme",
-  "description": ""
+  "description": "This is a tool for rendering Live2d models (only v2 is currently supported). The modified SDK allows you to output the rendered texture to separate PNG images."
 }

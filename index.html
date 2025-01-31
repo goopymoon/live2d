@@ -9,8 +9,8 @@
 </head>
 
 <body onload="viewer()">
-  <div style="max-height: 900px;max-width:900px;overflow: scroll;">
-    <canvas id="glcanvas" width="1024px" height="1024px" style="border:dashed 1px #CCC"></canvas>
+  <div style="max-height: 900px; max-width: 900px; overflow: scroll; position: relative;">
+    <canvas id="glcanvas" width="1024px" height="1024px" style="border: dashed 1px #CCC"></canvas>
   </div>
 
   <!-- Live2D Library -->
@@ -27,7 +27,7 @@
   <script src="src/LAppModel.js"></script>
   <script src="src/LAppLive2DManager.js"></script>
   <script src="src/renderPlus.js"></script>
-  <div id="txtInfo" style="color: #ffffff; background-color: transparent"></div>
+  <div id="txtInfo" style="color: #ffffff; background-color: rgba(0, 0, 0, 0.5)"></div>
   <p>
     <button id="btnPrev" class="active">Prev Model</button>
     <button id="btnNext" class="active">Next Model</button>
