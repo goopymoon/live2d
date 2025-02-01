@@ -457,20 +457,18 @@ viewer.init = function () {
 viewer.startDraw = function () {
     if (!isDrawStart) {
         isDrawStart = true;
-        (function tick() {
+
+        function tick() {
             if (isPlay) {
                 viewer.draw(); // 1回分描画
             }
+            // requestAnimationFrame은 비동기적으로 다음 화면 그리기 작업을 예약합니다.
+            // 브라우저의 화면 리플레시 주기에 맞춰 호출되며, 대부분의 경우 60Hz(초당 60번)로 호출됩니다. 
+            // 즉, 약 16.7ms 간격으로 실행됩니다.
+            requestAnimationFrame(tick); // 다음 프레임 요청
+        }
 
-            var requestAnimationFrame =
-                window.requestAnimationFrame ||
-                window.mozRequestAnimationFrame ||
-                window.webkitRequestAnimationFrame ||
-                window.msRequestAnimationFrame;
-
-            // 一定時間後に自身を呼び出す
-            requestAnimationFrame(tick, canvas);
-        })();
+        tick(); // 애니메이션 루프 시작
     }
 };
 
@@ -812,19 +810,29 @@ function lookRandom() {
     }
 }
 
+function isInCanvasArea(e) {
+    var rect = thisRef.canvas.getBoundingClientRect();  // 캔버스의 위치와 크기 정보 가져오기
+
+    // 터치나 마우스 좌표가 캔버스 영역 내에 있는지 확인
+    if (
+        e.clientX < rect.left ||          // 좌측 바깥
+        e.clientX > rect.right ||         // 우측 바깥
+        e.clientY < rect.top ||           // 상단 바깥
+        e.clientY > rect.bottom          // 하단 바깥
+    ) {
+        return false;
+    }
+    return true;
+}
+
 function mouseEvent(e) {
+    if (!isInCanvasArea(e)) {
+        return;
+    }
+
     e.preventDefault();
-
+    
     if (e.type == "mousewheel") {
-        if (
-            e.clientX < 0 ||
-            thisRef.canvas.clientWidth < e.clientX ||
-            e.clientY < 0 ||
-            thisRef.canvas.clientHeight < e.clientY
-        ) {
-            return;
-        }
-
         if (e.wheelDelta > 0) modelScaling(1.1);
         // 上方向スクロール 拡大
         else modelScaling(0.9); // 下方向スクロール 縮小
@@ -846,13 +854,18 @@ function mouseEvent(e) {
 }
 
 function touchEvent(e) {
+    if (!isInCanvasArea(e)) {
+        return;
+    }
+    
     e.preventDefault();
 
     var touch = e.touches[0];
 
     if (e.type == "touchstart") {
-        if (e.touches.length == 1) modelTurnHead(touch);
-        // onClick(touch);
+        if (e.touches.length == 1) {
+            modelTurnHead(touch);
+        }
     } else if (e.type == "touchmove") {
         followPointer(touch);
 
@@ -875,6 +888,10 @@ function touchEvent(e) {
 }
 
 /* ********** マトリックス操作 ********** */
+// 디바이스 입력 좌표를 뷰 좌표 시스템에 맞게 변환하여 화면상에서의 최종 위치를 계산.
+//  디바이스 좌표: 사용자 입력이 터치스크린에서 발생한 좌표
+//  화면 좌표: 디바이스의 물리적 해상도에 맞춰 변환된 좌표
+//  뷰 좌표: 뷰 행렬에 의해 확대/축소, 이동 등의 변환이 적용된 좌표
 function transformViewX(deviceX) {
     var screenX = this.deviceToScreen.transformX(deviceX); // 論理座標変換した座標を取得。
     return viewMatrix.invertTransformX(screenX); // 拡大、縮小、移動後の値。
