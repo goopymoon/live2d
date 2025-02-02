@@ -722,6 +722,21 @@ function modelScaling(scale) {
     }
 }
 
+// 📏 캔버스 스케일링 보정 함수
+function getScaledCoordinates(event, target) {
+    var rect = target.getBoundingClientRect();
+
+    // 렌더링 크기 대비 캔버스 해상도 비율
+    var scaleX = target.width / rect.width;
+    var scaleY = target.height / rect.height;
+
+    // 보정된 좌표 반환
+    return {
+        x: (event.clientX - rect.left) * scaleX,
+        y: (event.clientY - rect.top) * scaleY
+    };
+}
+
 /*
  * クリックされた方向を向く
  * タップされた場所に応じてモーションを再生
@@ -729,12 +744,14 @@ function modelScaling(scale) {
 function modelTurnHead(event) {
     thisRef.drag = true;
 
-    var rect = event.target.getBoundingClientRect();
+    // 보정된 좌표 가져오기
+    var scaledCoords = getScaledCoordinates(event, event.target);
 
-    var sx = transformScreenX(event.clientX - rect.left);
-    var sy = transformScreenY(event.clientY - rect.top);
-    var vx = transformViewX(event.clientX - rect.left);
-    var vy = transformViewY(event.clientY - rect.top);
+    // 좌표 변환
+    var sx = transformScreenX(scaledCoords.x);
+    var sy = transformScreenY(scaledCoords.y);
+    var vx = transformViewX(scaledCoords.x);
+    var vy = transformViewY(scaledCoords.y);
 
     if (LAppDefine.DEBUG_MOUSE_LOG)
         l2dLog(
@@ -762,12 +779,14 @@ function modelTurnHead(event) {
  * マウスを動かした時のイベント
  */
 function followPointer(event) {
-    var rect = event.target.getBoundingClientRect();
+    // 보정된 좌표 가져오기
+    var scaledCoords = getScaledCoordinates(event, event.target);
 
-    var sx = transformScreenX(event.clientX - rect.left);
-    var sy = transformScreenY(event.clientY - rect.top);
-    var vx = transformViewX(event.clientX - rect.left);
-    var vy = transformViewY(event.clientY - rect.top);
+    // 좌표 변환
+    var sx = transformScreenX(scaledCoords.x);
+    var sy = transformScreenY(scaledCoords.y);
+    var vx = transformViewX(scaledCoords.x);
+    var vy = transformViewY(scaledCoords.y);
 
     if (LAppDefine.DEBUG_MOUSE_LOG)
         l2dLog(
