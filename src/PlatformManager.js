@@ -13,7 +13,6 @@
 //============================================================
 function PlatformManager()
 {
-
 }
 
 //============================================================
@@ -43,11 +42,9 @@ PlatformManager.prototype.loadBytes       = function(path/*String*/, callback)
 //============================================================
 PlatformManager.prototype.loadString      = function(path/*String*/)
 {
-    
     this.loadBytes(path, function(buf) {        
         return buf;
     });
-    
 }
 
 //============================================================
@@ -62,7 +59,11 @@ PlatformManager.prototype.loadLive2DModel = function(path/*String*/, callback)
         model = Live2DModelWebGL.loadModel(buf);
         callback(model);
     });
+}
 
+function encodeFilePath(filePath) {
+    // 공백을 %20으로, #을 %23으로 변환
+    return filePath.replace(/ /g, '%20').replace(/#/g, '%23');
 }
 
 //============================================================
@@ -72,7 +73,7 @@ PlatformManager.prototype.loadTexture     = function(model/*ALive2DModel*/, no/*
 { 
     // load textures
     var loadedImage = new Image();
-    loadedImage.src = path;
+    loadedImage.src = encodeFilePath(path);
         
     var thisRef = this;
     loadedImage.onload = function() {
