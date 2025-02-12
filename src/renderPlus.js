@@ -538,7 +538,8 @@ viewer.changeModel = function (inc = 1) {
     isModelShown = false;
 
     live2DMgr.reloadFlg = true;
-    live2DMgr.count += inc;
+    live2DMgr.incCount(inc);
+    document.getElementById("editGoto").value = live2DMgr.count+1;
 
     txtInfo = document.getElementById("txtInfo");
 

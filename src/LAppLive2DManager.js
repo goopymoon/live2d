@@ -16,6 +16,10 @@ function LAppLive2DManager() {
     Live2DFramework.setPlatformManager(new PlatformManager());
 }
 
+LAppLive2DManager.prototype.incCount = function (inc) {
+    this.count = (this.count + this.modelJsonList.length + inc) % this.modelJsonList.length;
+};
+
 LAppLive2DManager.prototype.getCount = function () {
     if (this.count < 0) this.count = 0;
     return parseInt(this.count % this.modelJsonList.length);
